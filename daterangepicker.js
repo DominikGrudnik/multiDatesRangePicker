@@ -41,6 +41,7 @@
         this.maxSpan = false;
         this.autoApply = false;
         this.singleDatePicker = false;
+        this.doubleCalendar = false;
         this.showDropdowns = false;
         this.minYear = moment().subtract(100, 'year').format('YYYY');
         this.maxYear = moment().add(100, 'year').format('YYYY');
@@ -56,6 +57,7 @@
         this.alwaysShowCalendars = false;
         this.ranges = {};
         this.multiDateArray = [];
+
 
         this.opens = 'right';
         if (this.element.hasClass('pull-right'))
@@ -303,7 +305,7 @@
                 var val = $(this.element).val(),
                     split = val.split(this.locale.separator);
 
-                start = end = test;
+                start = end = null;
 
                 if (split.length == 2) {
                     start = moment(split[0], this.locale.format);
@@ -393,7 +395,8 @@
             this.container.addClass('single');
             this.container.find('.drp-calendar.left').addClass('single');
             this.container.find('.drp-calendar.left').show();
-            this.container.find('.drp-calendar.right').hide();
+            if (this.doubleCalendar)
+                this.container.find('.drp-calendar.right').hide();
             if (!this.timePicker) {
                 this.container.addClass('auto-apply');
             }
@@ -836,10 +839,10 @@
                             if (calendar[row][col].format('YYYY-MM-DD') == this.multiDateArray[i][0])
                                 classes.push('active', 'start-date');
                             }
-                            // console.log('multistart' + startDate);
+                            console.log('multistart start' + startDate);
 
-                            // if (calendar[row][col].format('YYYY-MM-DD') == this.startDate.format('YYYY-MM-DD'))
-                            // classes.push('active', 'start-date');
+                            if (calendar[row][col].format('YYYY-MM-DD') == multiDateArray[i][0])
+                                classes.push('active', 'start-date');
                     } else {
                         if (calendar[row][col].format('YYYY-MM-DD') == this.startDate.format('YYYY-MM-DD'))
                             classes.push('active', 'start-date');
@@ -852,11 +855,11 @@
                             if (calendar[row][col].format('YYYY-MM-DD') == this.multiDateArray[i][1])
                                 classes.push('active', 'end-date');
                         }
-                        // console.log('multistart' + endDate);
-                        // if (calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
-                        //     classes.push('active', 'end-date');
+
+                        if (this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
+                            classes.push('active', 'end-date');
                     } else {
-                        if (calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
+                        if (this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
                             classes.push('active', 'end-date');
                     }
 
@@ -865,11 +868,12 @@
                             if (calendar[row][col].format('YYYY-MM-DD') > this.multiDateArray[i][0] && calendar[row][col].format('YYYY-MM-DD') < this.multiDateArray[i][1])
                             classes.push('in-range');
                         }
-                        // if (this.endDate !== null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
-                        //     classes.push('in-range');
+
+                        if (this.endDate !== null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
+                            classes.push('in-range');
                     } else {
-                        // if (this.endDate !== null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
-                        //     classes.push('in-range');
+                        if (this.endDate !== null && calendar[row][col] > this.startDate && calendar[row][col] < this.endDate)
+                            classes.push('in-range');
                     }
 
                     //apply custom classes for this date
