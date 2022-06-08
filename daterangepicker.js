@@ -54,7 +54,7 @@
         this.timePickerSeconds = false;
         this.linkedCalendars = true;
         this.autoUpdateInput = true;
-        this.alwaysShowCalendars = false;
+        this.alwaysShowCalendars = true;
         this.ranges = {};
         this.multiDateArray = [];
 
@@ -166,7 +166,6 @@
         this.container.addClass(this.locale.direction);
 
         if (typeof options.startDate === 'string') {
-            console.log('string ' + options.startDate);
             this.startDate = moment(options.startDate, this.locale.format);
         }
 
@@ -180,7 +179,6 @@
             this.maxDate = moment(options.maxDate, this.locale.format);
 
         if (typeof options.startDate === 'object') {
-            console.log('object ' + options.startDate);
             this.startDate = moment(options.startDate);
         }
 
@@ -793,6 +791,30 @@
                 })
                 this.multiDateArray = tmpMultiDateArray;
             }
+            // console.log(this.multiDateArray.length);
+            console.log(this.multiDateArray);
+
+            // removing dates when they overlaps for multidates
+            if (this.multiDateArray.length > 0)
+                for (var i = 0; i < this.multiDateArray.length-1; i++) {
+                    if (this.startDate != null) {
+                        if (this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
+                            $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                            console.log($(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).val());
+                        }
+
+                        if (this.endDate != null) {
+                            if (this.endDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.endDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
+                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                            }
+
+                            if (this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][1]) {
+                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                                console.log($(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).val());
+                            }
+                        }
+                    }
+                }
 
             for (var row = 0; row < 6; row++) {
                 html += '<tr>';
@@ -836,15 +858,14 @@
                     //and multiple date starts if option is true
                     if (this.multiDatesWithSelect === true && this.multiDateArray.length !== 0) {
                         for (var i = 0; i < this.multiDateArray.length; i++) {
-                            if (calendar[row][col].format('YYYY-MM-DD') == this.multiDateArray[i][0])
+                            if (!(classes.includes('off')) && calendar[row][col].format('YYYY-MM-DD') == this.multiDateArray[i][0])
                                 classes.push('active', 'start-date');
                             }
-                            console.log('multistart start' + startDate);
 
-                            if (calendar[row][col].format('YYYY-MM-DD') == multiDateArray[i][0])
+                            if (!(classes.includes('off')) && this.startDate != null && calendar[row][col].format('YYYY-MM-DD') == this.startDate.format('YYYY-MM-DD'))
                                 classes.push('active', 'start-date');
                     } else {
-                        if (calendar[row][col].format('YYYY-MM-DD') == this.startDate.format('YYYY-MM-DD'))
+                        if (!(classes.includes('off')) && this.startDate != null && calendar[row][col].format('YYYY-MM-DD') == this.startDate.format('YYYY-MM-DD'))
                             classes.push('active', 'start-date');
                     }
 
@@ -852,14 +873,14 @@
                     //and multiple date ends if option is true
                     if (this.multiDatesWithSelect === true && this.multiDateArray.length !== 0) {
                         for (var i = 0; i < this.multiDateArray.length; i++) {
-                            if (calendar[row][col].format('YYYY-MM-DD') == this.multiDateArray[i][1])
+                            if (!(classes.includes('off')) && calendar[row][col].format('YYYY-MM-DD') == this.multiDateArray[i][1])
                                 classes.push('active', 'end-date');
                         }
 
-                        if (this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
+                        if (!(classes.includes('off')) && this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
                             classes.push('active', 'end-date');
                     } else {
-                        if (this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
+                        if (!(classes.includes('off')) && this.endDate != null && calendar[row][col].format('YYYY-MM-DD') == this.endDate.format('YYYY-MM-DD'))
                             classes.push('active', 'end-date');
                     }
 
@@ -1184,8 +1205,9 @@
             }
 
             //if a new date range was selected, invoke the user callback function
-            if (!this.startDate.isSame(this.oldStartDate) || !this.endDate.isSame(this.oldEndDate))
-                this.callback(this.startDate.clone(), this.endDate.clone(), this.chosenLabel);
+            if (!this.multiDatesWithSelect)
+                if (!this.startDate.isSame(this.oldStartDate) || !this.endDate.isSame(this.oldEndDate))
+                    this.callback(this.startDate.clone(), this.endDate.clone(), this.chosenLabel);
 
             //if picker is attached to a text input, update it
             this.updateElement();
@@ -1248,7 +1270,11 @@
 
                 if (!this.alwaysShowCalendars)
                     this.hideCalendars();
-                this.clickApply();
+
+                if (!this.multiDatesWithSelect)
+                    this.clickApply();
+                else
+                    this.clickApplyDontHide();
             }
         },
 
@@ -1370,14 +1396,20 @@
                 this.setEndDate(date.clone());
                 if (this.autoApply) {
                     this.calculateChosenLabel();
-                    this.clickApply();
+                    if (!this.multiDatesWithSelect)
+                        this.clickApply();
+                    else
+                        this.clickApplyDontHide();
                 }
             }
 
             if (this.singleDatePicker) {
                 this.setEndDate(this.startDate);
                 if (!this.timePicker)
-                    this.clickApply();
+                    if (!this.multiDatesWithSelect)
+                        this.clickApply();
+                    else
+                        this.clickApplyDontHide();
             }
 
             this.updateView();
@@ -1421,6 +1453,12 @@
 
         clickApply: function (e) {
             this.hide();
+            this.element.trigger('apply.daterangepicker', this);
+        },
+
+        clickApplyDontHide: function (e) {
+            if (!this.startDate.isSame(this.oldStartDate) || !this.endDate.isSame(this.oldEndDate))
+                this.callback(this.startDate.clone(), this.endDate.clone(), this.chosenLabel);
             this.element.trigger('apply.daterangepicker', this);
         },
 
