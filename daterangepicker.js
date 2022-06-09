@@ -619,10 +619,10 @@
         },
 
         renderCalendar: function (side) {
-
             //
             // Build the matrix of dates that will populate the calendar
             //
+            this.updateMultiDateSelections();
 
             var calendar = side == 'left' ? this.leftCalendar : this.rightCalendar;
             var month = calendar.month.month();
@@ -790,31 +790,11 @@
                     }
                 })
                 this.multiDateArray = tmpMultiDateArray;
+                console.log(this.multiDateArray);
             }
-            // console.log(this.multiDateArray.length);
-            console.log(this.multiDateArray);
 
             // removing dates when they overlaps for multidates
-            if (this.multiDateArray.length > 0)
-                for (var i = 0; i < this.multiDateArray.length-1; i++) {
-                    if (this.startDate != null) {
-                        if (this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
-                            $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
-                            console.log($(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).val());
-                        }
-
-                        if (this.endDate != null) {
-                            if (this.endDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.endDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
-                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
-                            }
-
-                            if (this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][1]) {
-                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
-                                console.log($(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).val());
-                            }
-                        }
-                    }
-                }
+            this.updateMultiDateSelections();
 
             for (var row = 0; row < 6; row++) {
                 html += '<tr>';
@@ -1341,7 +1321,6 @@
         },
 
         clickDate: function (e) {
-
             if (!$(e.target).hasClass('available')) return;
 
             var title = $(e.target).attr('data-title');
@@ -1615,6 +1594,28 @@
             this.container.remove();
             this.element.off('.daterangepicker');
             this.element.removeData();
+        },
+
+        updateMultiDateSelections: function() {
+            if (this.multiDateArray.length > 0) {
+                var i = this.multiDateArray.length - 1;
+                while (i--) {
+                    if (this.startDate != null) {
+                        if (this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
+                            $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                            this.multiDateArray.slice(i);
+                        } else if (this.endDate != null) {
+                            if (this.endDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.endDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
+                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                                this.multiDateArray.slice(i);
+                            } else if (this.startDate.format("YYYY-MM-DD") < this.multiDateArray[i][0] && this.endDate.format("YYYY-MM-DD") > this.multiDateArray[i][1]) {
+                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                                this.multiDateArray.slice(i);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
     };
