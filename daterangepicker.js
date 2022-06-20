@@ -165,9 +165,8 @@
         }
         this.container.addClass(this.locale.direction);
 
-        if (typeof options.startDate === 'string') {
+        if (typeof options.startDate === 'string')
             this.startDate = moment(options.startDate, this.locale.format);
-        }
 
         if (typeof options.endDate === 'string')
             this.endDate = moment(options.endDate, this.locale.format);
@@ -178,9 +177,8 @@
         if (typeof options.maxDate === 'string')
             this.maxDate = moment(options.maxDate, this.locale.format);
 
-        if (typeof options.startDate === 'object') {
+        if (typeof options.startDate === 'object')
             this.startDate = moment(options.startDate);
-        }
 
         if (typeof options.endDate === 'object')
             this.endDate = moment(options.endDate);
@@ -608,8 +606,20 @@
                 this.rightCalendar.month.hour(hour).minute(minute).second(second);
             }
 
-            this.renderCalendar('left');
+            if (this.multiDatesWithSelect) {
+                this.updateMultiDateSelections();
+            }
+
             this.renderCalendar('right');
+            this.renderCalendar('left');
+
+            //double rendering for multidatesranges
+            if (this.multiDatesWithSelect) {
+                this.renderCalendar('right');
+                this.renderCalendar('left');
+            }
+
+
 
             //highlight any predefined range matching the current start and end dates
             this.container.find('.ranges li').removeClass('active');
@@ -622,7 +632,9 @@
             //
             // Build the matrix of dates that will populate the calendar
             //
-            this.updateMultiDateSelections();
+            if (this.multiDatesWithSelect) {
+                this.updateMultiDateSelections();
+            }
 
             var calendar = side == 'left' ? this.leftCalendar : this.rightCalendar;
             var month = calendar.month.month();
@@ -748,7 +760,8 @@
             }
 
             html += '<th colspan="5" class="month">' + dateHtml + '</th>';
-            if ((!maxDate || maxDate.isAfter(calendar.lastDay)) && (!this.linkedCalendars || side == 'right' || this.singleDatePicker)) {
+            // maxDate = moment(maxDate, "YYYY-MM-DD");
+            if ((!maxDate || maxDate.isAfter(calendar.lastDay)) && (!this.linkedCalendars || side == 'right' || (this.singleDatePicker && this.doubleCalendar))) {
                 html += '<th class="next available"><span></span></th>';
             } else {
                 html += '<th></th>';
@@ -781,20 +794,25 @@
             if (this.multiDatesWithSelect === true) {
                 var tmpMultiDateArray = [];
                 $('#multidatepicker').children('option:selected').each(function(i) {
-                    var startDate = $(this).val().substr(0, $(this).val().indexOf('/'));
-                    var endDate = $(this).val().substr($(this).val().indexOf('/')+1, 10);
-                    if (tmpMultiDateArray.length == 0) {
-                        tmpMultiDateArray.push([startDate, endDate]);
-                    } else if (tmpMultiDateArray[i] === undefined) {
-                        tmpMultiDateArray.push([startDate, endDate]);
+                    if ($(this).val().indexOf('/') == -1) {
+                        tmpMultiDateArray.push([$(this).val()]);
+                    } else {
+                        var startDate = $(this).val().substr(0, $(this).val().indexOf('/'));
+                        var endDate = $(this).val().substr($(this).val().indexOf('/')+1, 10);
+                        if (tmpMultiDateArray.length == 0) {
+                            tmpMultiDateArray.push([startDate, endDate]);
+                        } else if (tmpMultiDateArray[i] === undefined) {
+                            tmpMultiDateArray.push([startDate, endDate]);
+                        }
                     }
                 })
                 this.multiDateArray = tmpMultiDateArray;
-                console.log(this.multiDateArray);
             }
 
             // removing dates when they overlaps for multidates
-            this.updateMultiDateSelections();
+            if (this.multiDatesWithSelect) {
+                this.updateMultiDateSelections();
+            }
 
             for (var row = 0; row < 6; row++) {
                 html += '<tr>';
@@ -889,7 +907,7 @@
                     var cname = '',
                         disabled = false;
                     for (var i = 0; i < classes.length; i++) {
-                        cname += classes[i] + ' ';
+                        cname += classes[i] + ' ';maxDate
                         if (classes[i] == 'disabled')
                             disabled = true;
                     }
@@ -1600,6 +1618,7 @@
             if (this.multiDateArray.length > 0) {
                 var i = this.multiDateArray.length - 1;
                 while (i--) {
+                    console.log("i = " + i);
                     if (this.startDate != null) {
                         if (this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
                             $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
@@ -1617,7 +1636,6 @@
                 }
             }
         }
-
     };
 
     $.fn.daterangepicker = function (options, callback) {
