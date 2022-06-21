@@ -606,10 +606,6 @@
                 this.rightCalendar.month.hour(hour).minute(minute).second(second);
             }
 
-            if (this.multiDatesWithSelect) {
-                this.updateMultiDateSelections();
-            }
-
             this.renderCalendar('right');
             this.renderCalendar('left');
 
@@ -618,8 +614,6 @@
                 this.renderCalendar('right');
                 this.renderCalendar('left');
             }
-
-
 
             //highlight any predefined range matching the current start and end dates
             this.container.find('.ranges li').removeClass('active');
@@ -632,9 +626,7 @@
             //
             // Build the matrix of dates that will populate the calendar
             //
-            if (this.multiDatesWithSelect) {
-                this.updateMultiDateSelections();
-            }
+
 
             var calendar = side == 'left' ? this.leftCalendar : this.rightCalendar;
             var month = calendar.month.month();
