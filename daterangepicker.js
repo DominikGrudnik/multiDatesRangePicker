@@ -1618,7 +1618,6 @@
             if (this.multiDateArray.length > 0) {
                 var i = this.multiDateArray.length - 1;
                 while (i--) {
-                    console.log("i = " + i);
                     if (this.startDate != null) {
                         if (this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
                             $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
