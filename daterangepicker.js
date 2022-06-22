@@ -620,6 +620,7 @@
             if (this.endDate == null) return;
 
             this.calculateChosenLabel();
+            this.sortDatesAscending();
         },
 
         renderCalendar: function (side) {
@@ -784,25 +785,7 @@
             }
 
             if (this.multiDatesWithSelect === true) {
-                var tmpMultiDateArray = [];
-                $('#multidatepicker').children('option:selected').each(function(i) {
-                    if ($(this).val().indexOf('/') == -1) {
-                        tmpMultiDateArray.push([$(this).val()]);
-                    } else {
-                        var startDate = $(this).val().substr(0, $(this).val().indexOf('/'));
-                        var endDate = $(this).val().substr($(this).val().indexOf('/')+1, 10);
-                        if (tmpMultiDateArray.length == 0) {
-                            tmpMultiDateArray.push([startDate, endDate]);
-                        } else if (tmpMultiDateArray[i] === undefined) {
-                            tmpMultiDateArray.push([startDate, endDate]);
-                        }
-                    }
-                })
-                this.multiDateArray = tmpMultiDateArray;
-            }
-
-            // removing dates when they overlaps for multidates
-            if (this.multiDatesWithSelect) {
+                this.multiDateRangesOptionsToArray();
                 this.updateMultiDateSelections();
             }
 
@@ -1188,8 +1171,13 @@
         hide: function (e) {
             if (!this.isShowing) return;
 
+            this.multiDateRangesOptionsToArray();
+
             //incomplete date selection, revert to last values
-            if (!this.endDate) {
+            if (this.multiDatesWithSelect === true && this.multiDateArray.length !== 0) {
+                this.startDate = moment(this.multiDateArray[this.multiDateArray.length-1][0], this.locale.format);
+                this.endDate = moment(this.multiDateArray[this.multiDateArray.length-1][1], this.locale.format);
+            } else if (!this.endDate){
                 this.startDate = this.oldStartDate.clone();
                 this.endDate = this.oldEndDate.clone();
             }
@@ -1600,12 +1588,31 @@
             }
         },
 
-        remove: function () {
+        remove: function() {
             this.container.remove();
             this.element.off('.daterangepicker');
             this.element.removeData();
         },
 
+        multiDateRangesOptionsToArray: function() {
+            var tmpMultiDateArray = [];
+            $('#multidatepicker').children('option:selected').each(function(i) {
+                if ($(this).val().indexOf('/') == -1) {
+                    tmpMultiDateArray.push([$(this).val()]);
+                } else {
+                    var startDate = $(this).val().substr(0, $(this).val().indexOf('/'));
+                    var endDate = $(this).val().substr($(this).val().indexOf('/')+1, 10);
+                    if (tmpMultiDateArray.length == 0) {
+                        tmpMultiDateArray.push([startDate, endDate]);
+                    } else if (tmpMultiDateArray[i] === undefined) {
+                        tmpMultiDateArray.push([startDate, endDate]);
+                    }
+                }
+            })
+            this.multiDateArray = tmpMultiDateArray;
+        },
+
+         // removing dates when they overlaps for multidates
         updateMultiDateSelections: function() {
             if (this.multiDateArray.length > 0) {
                 var i = this.multiDateArray.length - 1;
@@ -1626,8 +1633,18 @@
                     }
                 }
             }
+        },
+
+        sortDatesAscending: function() {
+            var selectList = $('#multidatepicker > option');
+            selectList.sort(
+            (a, b) => a.innerText.localeCompare(b.innerText)
+            );
+            $('#multidatepicker').html(selectList);
         }
     };
+
+
 
     $.fn.daterangepicker = function (options, callback) {
         var implementOptions = $.extend(true, {}, $.fn.daterangepicker.defaultOptions, options);
