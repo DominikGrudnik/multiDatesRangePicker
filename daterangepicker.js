@@ -606,13 +606,13 @@
                 this.rightCalendar.month.hour(hour).minute(minute).second(second);
             }
 
-            this.renderCalendar('right');
             this.renderCalendar('left');
+            this.renderCalendar('right');
 
             //double rendering for multidatesranges
             if (this.multiDatesWithSelect) {
-                this.renderCalendar('right');
                 this.renderCalendar('left');
+                this.renderCalendar('right');
             }
 
             //highlight any predefined range matching the current start and end dates
@@ -1171,7 +1171,8 @@
         hide: function (e) {
             if (!this.isShowing) return;
 
-            this.multiDateRangesOptionsToArray();
+            if (this.multiDatesWithSelect === true)
+                this.multiDateRangesOptionsToArray();
 
             //incomplete date selection, revert to last values
             if (this.multiDatesWithSelect === true && this.multiDateArray.length !== 0) {
@@ -1643,8 +1644,6 @@
             $('#multidatepicker').html(selectList);
         }
     };
-
-
 
     $.fn.daterangepicker = function (options, callback) {
         var implementOptions = $.extend(true, {}, $.fn.daterangepicker.defaultOptions, options);
