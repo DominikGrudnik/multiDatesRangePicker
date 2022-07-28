@@ -57,6 +57,7 @@
         this.alwaysShowCalendars = true;
         this.ranges = {};
         this.multiDateArray = [];
+        this.muliDateInput = ""; //should have id for example: #multidatepicker
 
 
         this.opens = 'right';
@@ -281,7 +282,10 @@
         if (typeof options.alwaysShowCalendars === 'boolean')
             this.alwaysShowCalendars = options.alwaysShowCalendars;
 
-        if (typeof options.multiDatesWithSelect === 'boolean')
+        if (typeof options.multiDateInput === 'string')
+            this.multiDateInput = options.multiDateInput;
+
+        if (typeof options.multiDatesWithSelect === 'boolean' && this.multiDateInput != "")
             this.multiDatesWithSelect = options.multiDatesWithSelect;
 
         // update day names order to firstDay
@@ -1597,7 +1601,7 @@
 
         multiDateRangesOptionsToArray: function() {
             var tmpMultiDateArray = [];
-            $('#multidatepicker').children('option:selected').each(function(i) {
+            $(this.multiDateInput).children('option:selected').each(function(i) {
                 if ($(this).val().indexOf('/') == -1) {
                     tmpMultiDateArray.push([$(this).val()]);
                 } else {
@@ -1620,14 +1624,14 @@
                 while (i--) {
                     if (this.startDate != null) {
                         if (this.startDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.startDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
-                            $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                            $(`${this.multiDateInput} option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
                             this.multiDateArray.slice(i);
                         } else if (this.endDate != null) {
                             if (this.endDate.format("YYYY-MM-DD") >= this.multiDateArray[i][0] && this.endDate.format("YYYY-MM-DD") <= this.multiDateArray[i][1]) {
-                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                                $(`${this.multiDateInput} option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
                                 this.multiDateArray.slice(i);
                             } else if (this.startDate.format("YYYY-MM-DD") < this.multiDateArray[i][0] && this.endDate.format("YYYY-MM-DD") > this.multiDateArray[i][1]) {
-                                $(`#multidatepicker option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
+                                $(`${this.multiDateInput} option[value='${this.multiDateArray[i][0] + '/' + this.multiDateArray[i][1]}']`).remove();
                                 this.multiDateArray.slice(i);
                             }
                         }
@@ -1637,11 +1641,11 @@
         },
 
         sortDatesAscending: function() {
-            var selectList = $('#multidatepicker > option');
+            var selectList = $(`${this.multiDateInput} > option`);
             selectList.sort(
             (a, b) => a.innerText.localeCompare(b.innerText)
             );
-            $('#multidatepicker').html(selectList);
+            $(this.multiDateInput).html(selectList);
         }
     };
 
