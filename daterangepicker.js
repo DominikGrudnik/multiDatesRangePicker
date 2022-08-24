@@ -188,7 +188,7 @@
             this.minDate = moment(options.minDate);
 
         if (typeof options.maxDate === 'object')
-            this.maxDate = moment(options.maxDate);
+            this.maxDate = moment(options.maxDate, this.locale.format);
 
         // sanity check for bad options
         if (this.minDate && this.startDate.isBefore(this.minDate))
@@ -757,7 +757,7 @@
             }
 
             html += '<th colspan="5" class="month">' + dateHtml + '</th>';
-            // maxDate = moment(maxDate, "YYYY-MM-DD");
+
             if ((!maxDate || maxDate.isAfter(calendar.lastDay)) && (!this.linkedCalendars || side == 'right' || (this.singleDatePicker && this.doubleCalendar))) {
                 html += '<th class="next available"><span></span></th>';
             } else {
